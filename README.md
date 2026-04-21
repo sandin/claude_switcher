@@ -40,6 +40,8 @@ cargo build --release
 ```bash
 # Copy to a directory in your PATH
 cp target/release/claude_switcher /usr/local/bin/
+# or
+cp target/release/claude_switcher ~/.local/bin/claude_switcher
 # Or on Windows, copy to a directory in your PATH
 ```
 
