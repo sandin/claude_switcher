@@ -12,6 +12,14 @@ struct Args {
     /// Path to the .claude directory
     #[arg(short, long, default_value = ".claude")]
     dir: PathBuf,
+
+    /// Directly switch to the specified provider (non-interactive mode)
+    #[arg(short, long)]
+    provider: Option<String>,
+
+    /// Skip confirmation prompt (use with --provider)
+    #[arg(short, long, default_value = "false")]
+    yes: bool,
 }
 
 fn main() -> Result<()> {
@@ -44,17 +52,28 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    let selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Please choose the provider")
-        .default(0)
-        .items(&providers)
-        .interact()?;
+    let selected_provider = match &args.provider {
+        Some(p) => {
+            if !providers.contains(p) {
+                println!("Provider '{}' not found. Available providers: {}", p, providers.join(", "));
+                return Ok(());
+            }
+            p.clone()
+        }
+        None => {
+            let selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Please choose the provider")
+                .default(0)
+                .items(&providers)
+                .interact()?;
 
-    let selected_provider = &providers[selection];
+            providers[selection].clone()
+        }
+    };
     let source_config_file = switcher_config_dir.join(format!("settings_{}.json", selected_provider));
     let target_config_file = claude_config_dir.join("settings.json");
 
-    if target_config_file.exists() {
+    if target_config_file.exists() && !args.yes {
         let overwrite = Confirm::with_theme(&ColorfulTheme::default())
             .with_prompt(format!("The {}/settings file already exists. Are you sure you want to overwrite it?", claude_config_dir.display()))
             .default(true)

@@ -84,6 +84,9 @@ cargo install --path .
 
 ```bash
 claude_switcher
+// or
+
+claude_switcher --provider minimax -y --dir .san_claude
 ```
 
 The tool will:
